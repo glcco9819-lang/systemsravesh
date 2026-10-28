@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 const API = (import.meta as any).env.VITE_API_URL || "http://localhost:4000";
 type Machine = { id: number; code: string; name: string; department: string; is_active: boolean };
@@ -29,19 +29,19 @@ export default function App() {
     } catch (e: any) { setNotice(e.message + " — بررسی کنید سرویس‌ها اجرا باشند."); }
   }
   useEffect(() => { load(); }, []);
-  async function submitMachine(e: React.FormEvent) {
+  async function submitMachine(e: FormEvent) {
     e.preventDefault();
     try { await request("/api/machines", { method: "POST", body: JSON.stringify(machineForm) }); setMachineForm({code:"",name:"",department:"تولید"}); setNotice("ماشین با موفقیت ثبت شد."); await load(); }
     catch (err: any) { setNotice(err.message); }
   }
-  async function submitDowntime(e: React.FormEvent) {
+  async function submitDowntime(e: FormEvent) {
     e.preventDefault();
     try {
       await request("/api/downtimes", { method: "POST", body: JSON.stringify({...downForm, machineId:Number(downForm.machineId), endedAt:downForm.endedAt || null}) });
       setNotice("توقف با موفقیت ثبت شد."); setDownForm(old => ({...old, reason:"",actionTaken:""})); await load();
     } catch (err: any) { setNotice(err.message); }
   }
-  async function publishForm(e: React.FormEvent) {
+  async function publishForm(e: FormEvent) {
     e.preventDefault();
     try { const definition = JSON.parse(fieldsJson); await request("/api/settings/downtime-form", {method:"PUT",body:JSON.stringify({title:formTitle,definition})}); setNotice("نسخه جدید فرم منتشر شد."); await load(); }
     catch (err: any) { setNotice(err instanceof SyntaxError ? "ساختار JSON معتبر نیست." : err.message); }
